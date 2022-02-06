@@ -1,35 +1,31 @@
-"use strict"
-import {func} from "./data.js";
+"use strict" //Строгий режим
+import {func} from "./data.js";// подключаем файлы
 import {sortByName,sortByLastName,sortByColor,sortByLength} from "./sortFunc.js";
-let dataArr=func();
-//dataArr=sortByColor(dataArr,0);// сортировка
-let sortFlag=-1;
-let hidenarr=[1,1,1,1];
-let arg ;
+let dataArr=func();// получаем массив данных из функции для храниния данных
+let sortFlag=-1;// флаг сортировки используется для переключения сортировки от возрастания к убыванию
+let hidenarr=[1,1,1,1];// флаги сокрытия колонок
+let arg ;//аргумент получаймый тернарным оператором
 let noteLiOnPage=10;//количество записай на страице
-let buffNote;
-let pageNum=1;
-let start=(pageNum-1)*noteLiOnPage;
-let end=start+noteLiOnPage;
-buffNote=dataArr.slice(start,end);
-let pagination=document.querySelector('#pagination')
-for (let i=1; i<=Math.ceil(dataArr.length/noteLiOnPage); i++){
+let buffNote;//буффер для отображения текущих записей страницы
+let pageNum=1;// номер страницы в начале = 1
+let start=(pageNum-1)*noteLiOnPage;//начало отображения таблицы
+let end=start+noteLiOnPage;//конец отображения таблицы
+buffNote=dataArr.slice(start,end);// получение в буффер 10 строк для выбранной страницы
+let pagination=document.querySelector('#pagination');// инициализация блока с кнопами переключения страниц
+for (let i=1; i<=Math.ceil(dataArr.length/noteLiOnPage); i++){// динамическая отрисовка кнопок страниц
   let li=document.createElement('li');
   li.innerHTML=`${i}`;
   pagination.appendChild(li);
 }
+noteTable();//функция для постраничного отображения таблицы
+table();//функция отображения таблицы
+buttonHendlers();// Функция добавления кнопок сокрытия колонок
 
-///////////////////// на этом элименте происходит раздклкние
-noteTable();
-table();
-buttonHendlers();
-
-///////////////////////
-function table( ) {
+function table( ) {//функция отображения таблицы
   let  table=document.querySelector(".dataTable");
   let heading=document.createElement("tr");
   let th=[];
-  for(let i=0;i<4; i++) {
+  for(let i=0;i<4; i++) {// отрисовка заголовка таблицы
     if (hidenarr[i] < 0) {
       continue;
     }
@@ -57,7 +53,7 @@ function table( ) {
 
   table.append(heading);
   th=[];
-  for (const elem of buffNote ) {
+  for (const elem of buffNote ) {//отрисовка полей таблицы
     let tr=document.createElement("tr");
 
     for(let i=0;i<4; i++){
@@ -73,65 +69,62 @@ function table( ) {
           th[i].innerText=`${elem['name']['lastName']}`;
           break;
         case 2:
-          //th[i].innerText=`${dataArr[0]['about']}`;
           let p=document.createElement("p");
           p.innerText=`${elem['about']}`;
           th[i].append(p);
-          th[i].classList.add("doubleRow");
+          th[i].classList.add("doubleRow");// подключение стиля для отрисовки дух строк
           break;
         case 3:
-          th[i].innerText=`${elem['eyeColor']}`;
+          th[i].innerText=`${elem['eyeColor']}`;//подключение стиля для отображения цвета
           th[i].setAttribute("style",`color:${elem['eyeColor']}; background-color: ${elem['eyeColor']};` );
           break;
 
       }
       tr.append(th[i]);
     }
-    tr.setAttribute("data-id",elem['id'] );
+    tr.setAttribute("data-id",elem['id'] );//сохраняем id в html как атрибут в будущем по нему мы будем изменять поля
     tr.addEventListener('click', function () {
-      //console.log(this.dataset.id);///создаем окно для изменения
-      let id= this.dataset.id;
-      editForm(this.dataset.id);
+      let id= this.dataset.id;//получаем id из атрибута
+      editForm(this.dataset.id);//вызваем функцияю отрисовки формы дабавления
     });
     table.append(tr);
   }
-    generaiteLisener();
+    generaiteLisener();// после отрисовки таблицы добавляем обработчики на  колонки
 }
-function generaiteLisener() {
+function generaiteLisener() {//обработчики колонок
 
-  arg = sortFlag > 0 ? 0 : 1;
+  arg = sortFlag > 0 ? 0 : 1;// при 1 сортировка по возрастанию при 0 по убыванию
   let nameFild=document.querySelector(".nameFild");
   let surnameFild=document.querySelector(".surnameFild");
   let aboutFild=document.querySelector(".aboutFild");
   let colorFild=document.querySelector(".colorFild");
-  nameFild.addEventListener('click', hendler);
-  surnameFild.addEventListener('click', hendler2);
-  aboutFild.addEventListener('click', hendler3);
-  colorFild.addEventListener('click', hendler4);
+  nameFild.addEventListener('click', hendler); //обработчик сортировки для колонки с именем
+  surnameFild.addEventListener('click', hendler2);//обработчик сортировки для колонки с фамилией
+  aboutFild.addEventListener('click', hendler3);//обработчик сортировки для колонки с информацией
+  colorFild.addEventListener('click', hendler4);//обработчик сортировки для колонки с цветом глаз
 }
 
-function noteTable() {//зависимая часть
-  let liElements=document.querySelectorAll("#pagination li");
-  for (let elem of liElements){//это должно задваться в table
+function noteTable() {//функция для постраничного отображения таблицы
+  let liElements=document.querySelectorAll("#pagination li");// получаем все кнопки
+  for (let elem of liElements){
     buffNote=dataArr.slice(start,end);
-    elem.addEventListener('click', function (){
-      let active=document.querySelector('#pagination li.active');
-      if(active){
+    elem.addEventListener('click', function (){// для каждой кнопки прописываем обработчик
+      let active=document.querySelector('#pagination li.active');// находим уже активированные (стиль) кнопки
+      if(active){//если они есть то снимем с них активацию(стиль)
         active.classList.remove('active');
       }
-
-      this.classList.add('active');
-      let pageNum=+this.innerHTML;
+      this.classList.add('active');//добавляем стиль активации
+      let pageNum=+this.innerHTML;//получаем выбранную страницу и подсчитываем какие поля должны быть отображены
       let start=(pageNum-1)*noteLiOnPage;
       let end=start+noteLiOnPage;
       buffNote=dataArr.slice(start,end);
-      let dataTable=document.querySelector(".dataTable");
+      let dataTable=document.querySelector(".dataTable");// находим старую таблицу и удаляем ее
       dataTable.innerText="";
-      table();
+      table();// отображаем новую таблицу
     });
   }
 }
-function buffNoter(){
+function buffNoter(){// функция для установки страницы в начальное положение при изменении сортировки
   let active=document.querySelector('#pagination li.active');
   if(active){
     active.classList.remove('active');
@@ -142,43 +135,43 @@ function buffNoter(){
   buffNote=dataArr.slice(start,end);
   return buffNote;
 }
-function hendler() {
+function hendler() {//сортировка по имени
   let dataTable=document.querySelector(".dataTable");
   dataTable.innerText="";
-  dataArr=sortByName(dataArr,arg);
+  dataArr=sortByName(dataArr,arg);//функция сортировки
   sortFlag*=-1;
-  buffNoter();
+  buffNoter();//возвращаем в начало
   buffNote=dataArr.slice(start,end);
   table();
 }
-function hendler2() {
+function hendler2() {//сортировка по фомиии
   let dataTable=document.querySelector(".dataTable");
   dataTable.innerText="";
-  dataArr=sortByLastName(dataArr,arg);
+  dataArr=sortByLastName(dataArr,arg);//функция сортировки
   sortFlag*=-1;
-  buffNoter();
+  buffNoter();//возвращаем в начало
   buffNote=dataArr.slice(start,end);
   table();
 }
-function hendler3() {
+function hendler3() {//сортировка по длинне описания
   let dataTable=document.querySelector(".dataTable");
   dataTable.innerText="";
-  dataArr=sortByLength(dataArr,arg);
+  dataArr=sortByLength(dataArr,arg);//функция сортировки
   sortFlag*=-1;
-  buffNoter();
+  buffNoter();//возвращаем в начало
   buffNote=dataArr.slice(start,end);
   table();
 }
-function hendler4() {
+function hendler4() {//  сортировка по названию цвета
   let dataTable=document.querySelector(".dataTable");
   dataTable.innerText="";
-  dataArr=sortByColor(dataArr,arg);
+  dataArr=sortByColor(dataArr,arg);//функция сортировки
   sortFlag*=-1;
-  buffNoter();
+  buffNoter();//возвращаем в начало
   buffNote=dataArr.slice(start,end);
   table();
 }
-function editForm(id) {
+function editForm(id) { // функция создания формы изменения записи
   let editFrorm=document.querySelector('.Editform');
   editFrorm.innerHTML='';
   let form=document.createElement('form');
@@ -195,7 +188,7 @@ function editForm(id) {
   document.forms['editElementForm'].addEventListener('submit', function (event){
     event.preventDefault();
     let data=this.elements;
-    // передаем данные в буффер по id  перезагрудаем таблицу
+    // находим нужную нам запись через id
     for (let i=0; i< dataArr.length; i++){
       if(dataArr[i].id==id){
         dataArr[i].name.firstName=data.name.value;
@@ -207,20 +200,20 @@ function editForm(id) {
       }
     }
     let dataTable=document.querySelector(".dataTable");
-    dataTable.innerText="";
+    dataTable.innerText="";//удаляем таблицу и отработавшую форму
     let editFrorm=document.querySelector('.Editform');
     editFrorm.innerHTML='';
     table();
   });
 
 }
-function buttonHendlers() {
+function buttonHendlers() {//функия обработчик кнопок сокрытия колонок
   let buttons=document.querySelectorAll('.hendlerButton');
   for (let button of buttons){
     button.addEventListener('click',function (){
-      let col= this.dataset.col*1;
-      hidenarr[col]*=-1;
-      let dataTable=document.querySelector(".dataTable");
+      let col= this.dataset.col*1;// номер колонки получаем из арггумета data кнопки
+      hidenarr[col]*=-1;// при клике мы переводим флаг в -1  или 1
+      let dataTable=document.querySelector(".dataTable");// при 1 выбранная колонка отображается при -1 нет
       dataTable.innerText="";
       table();
     });
